@@ -1,5 +1,7 @@
 # 3D Gravity Simulator Documentation
 
+![image.png](image.png)
+
 ## Overview
 
 This 3D Gravity Simulator is a C++ program that visualizes the gravitational interactions between celestial bodies in a simplified solar system model. It uses OpenGL for rendering and GLFW for window management and user input.

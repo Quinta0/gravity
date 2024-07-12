@@ -109,18 +109,3 @@ The program uses OpenGL to render the 3D scene:
     ```bash
     ./gravity
     ```
-
-### Using Docker
-If you prefer to use Docker, follow these steps:
-
-1. Ensure Docker is installed on your system.
-
-2. Build the Docker image:
-    ```bash
-    docker build -t gravity-simulator .
-    ```
-
-3. Run the Docker container:
-    ```bash
-    docker run --rm gravity-simulator
-    ```

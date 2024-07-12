@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "freeglut",
+    "glew",
+    "glm",
+    "vcpkg-cmake",
+    "opengl",
+    "glfw3"
+  ]
+}

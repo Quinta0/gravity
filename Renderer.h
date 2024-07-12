@@ -19,20 +19,21 @@ public:
     bool shouldClose();
     void swapBuffers();
     void processInput();
-    void cursorPosCallback(double xpos, double ypos);
+
+    static void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
 private:
     GLFWwindow* window;
     void drawSphere(const glm::vec3& position, float radius);
     void createSphereMesh(float radius, int sectors, int stacks);
-    void drawDebugTriangle();  // Debug function to draw a triangle
+    void drawDebugTriangle();
 
     GLuint sphereVAO, sphereVBO, sphereEBO;
     int sphereVertexCount, sphereIndexCount;
 
     void drawGrid(const Simulator& simulator);
     float calculateGravityFieldStrength(const glm::vec3& point, const std::vector<CelestialBody>& bodies);
-    void drawGravityField(const Simulator& simulator);
     void drawTrajectories(const std::vector<CelestialBody>& bodies);
 
     glm::vec3 cameraPos;
@@ -42,9 +43,10 @@ private:
     float mouseSensitivity;
     float yaw;
     float pitch;
-    bool firstMouse;
-    double lastX, lastY;
+    bool mousePressed;
+    double lastMouseX, lastMouseY;
 
     void updateCameraVectors();
+    void handleMouseMove(double xpos, double ypos);
 };
 #endif //GRAVITY_RENDERER_H

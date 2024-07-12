@@ -17,9 +17,9 @@ Renderer::Renderer(int width, int height)
           mouseSensitivity(0.05f),
           yaw(-45.0f),
           pitch(-30.0f),
-          firstMouse(true),
-          lastX(width / 2.0f),
-          lastY(height / 2.0f)
+          mousePressed(false),
+          lastMouseX(width / 2.0),
+          lastMouseY(height / 2.0)
 {
     if (!glfwInit()) {
         throw std::runtime_error("Failed to initialize GLFW");
@@ -45,11 +45,10 @@ Renderer::Renderer(int width, int height)
     createSphereMesh(1.0f, 20, 20);
 
     // Set up camera
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     glfwSetWindowUserPointer(window, this);
-    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
-        static_cast<Renderer*>(glfwGetWindowUserPointer(window))->cursorPosCallback(xpos, ypos);
-    });
+    glfwSetCursorPosCallback(window, cursorPosCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
 }
 
 Renderer::~Renderer() {
@@ -312,27 +311,46 @@ void Renderer::drawTrajectories(const std::vector<CelestialBody>& bodies) {
 }
 
 void Renderer::processInput() {
+    float cameraSpeed = this->cameraSpeed;
+
+    glm::vec3 front(cameraFront.x, 0, cameraFront.z);
+    front = glm::normalize(front);
+    glm::vec3 right = glm::normalize(glm::cross(front, cameraUp));
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+        cameraPos += front * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+        cameraPos -= front * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        cameraPos -= right * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        cameraPos += right * cameraSpeed;
 }
 
-void Renderer::cursorPosCallback(double xpos, double ypos) {
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
+void Renderer::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+    Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    renderer->handleMouseMove(xpos, ypos);
+}
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
+void Renderer::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            renderer->mousePressed = true;
+            glfwGetCursorPos(window, &renderer->lastMouseX, &renderer->lastMouseY);
+        } else if (action == GLFW_RELEASE) {
+            renderer->mousePressed = false;
+        }
+    }
+}
+
+void Renderer::handleMouseMove(double xpos, double ypos) {
+    if (!mousePressed) return;
+
+    float xoffset = xpos - lastMouseX;
+    float yoffset = lastMouseY - ypos;
+    lastMouseX = xpos;
+    lastMouseY = ypos;
 
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
@@ -340,10 +358,8 @@ void Renderer::cursorPosCallback(double xpos, double ypos) {
     yaw += xoffset;
     pitch += yoffset;
 
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
+    if (pitch > 89.0f) pitch = 89.0f;
+    if (pitch < -89.0f) pitch = -89.0f;
 
     updateCameraVectors();
 }

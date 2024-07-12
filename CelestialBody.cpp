@@ -1,5 +1,5 @@
 //
-// Created by 0piet on 7/12/2024.
+// Created by Quinta on 7/12/2024.
 //
 #include "CelestialBody.h"
 #include <iostream>

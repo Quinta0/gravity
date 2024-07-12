@@ -1,3 +1,6 @@
+//
+// Created by Quinta on 7/12/2024.
+//
 #include "Simulator.h"
 #include "Renderer.h"
 #include <chrono>

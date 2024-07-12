@@ -1,5 +1,5 @@
 //
-// Created by 0piet on 7/12/2024.
+// Created by Quinta on 7/12/2024.
 //
 #include "Renderer.h"
 #include <glm/gtc/matrix_transform.hpp>

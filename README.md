@@ -1,4 +1,4 @@
-# 3D Gravity Simulator Documentation
+# 3D Gravity Simulato
 
 ![image.png](image.png)
 

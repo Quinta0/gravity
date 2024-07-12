@@ -13,8 +13,8 @@ Renderer::Renderer(int width, int height)
         : cameraPos(3e11f, 2e11f, 3e11f),
           cameraFront(glm::normalize(glm::vec3(0.0f) - glm::vec3(3e11f, 2e11f, 3e11f))),
           cameraUp(0.0f, 1.0f, 0.0f),
-          cameraSpeed(1e9f), // Reduced speed
-          mouseSensitivity(0.05f), // Reduced sensitivity
+          cameraSpeed(1e9f),
+          mouseSensitivity(0.05f),
           yaw(-45.0f),
           pitch(-30.0f),
           firstMouse(true),

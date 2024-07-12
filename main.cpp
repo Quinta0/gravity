@@ -8,7 +8,7 @@
 
 int main() {
     Simulator simulator;
-    Renderer renderer(1600, 1200);  // Increased window size for better visibility
+    Renderer renderer(1600, 1200);
 
 // Sun (at the center)
     simulator.addBody(CelestialBody(1.989e30f, glm::dvec3(0, 0, 0), glm::dvec3(0, 0, 0)));

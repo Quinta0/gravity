@@ -25,7 +25,7 @@ private:
     GLFWwindow* window;
     void drawSphere(const glm::vec3& position, float radius);
     void createSphereMesh(float radius, int sectors, int stacks);
-    void drawDebugTriangle();  // Add this line
+    void drawDebugTriangle();  // Debug function to draw a triangle
 
     GLuint sphereVAO, sphereVBO, sphereEBO;
     int sphereVertexCount, sphereIndexCount;

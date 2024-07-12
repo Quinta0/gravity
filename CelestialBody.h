@@ -11,7 +11,7 @@
 
 class CelestialBody {
 public:
-    CelestialBody(double mass, const glm::dvec3& position, const glm::dvec3& velocity);
+    CelestialBody(double mass, const glm::dvec3& position, const glm::dvec3& velocity, double radius);
 
     void update(double dt);
     void applyForce(const glm::dvec3& force);
@@ -21,6 +21,7 @@ public:
     [[nodiscard]] glm::dvec3 getVelocity() const { return velocity; }
     void addToTrajectory(const glm::dvec3& position);
     const std::vector<glm::dvec3>& getTrajectory() const { return trajectory; }
+    double getRadius() const { return radius; }
 
 private:
     double mass;
@@ -29,5 +30,6 @@ private:
     glm::dvec3 acceleration;
     std::vector<glm::dvec3> trajectory;
     static const size_t MAX_TRAJECTORY_POINTS = 1000;
+    double radius;
 };
 #endif //GRAVITY_CELESTIALBODY_H

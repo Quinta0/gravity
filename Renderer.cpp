@@ -2,12 +2,9 @@
 // Created by Quinta on 7/12/2024.
 //
 #include "Renderer.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <cmath>
 #include <stdexcept>
-#include <iostream>
 
 Renderer::Renderer(int width, int height)
         : cameraPos(3e11f, 2e11f, 3e11f),
@@ -65,7 +62,7 @@ void Renderer::render(const Simulator& simulator) {
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, 1600.0 / 1200.0, 1e9, 1e13);
+    gluPerspective(45.0, 1600.0 / 1200.0, 1e8, 1e14);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -90,13 +87,9 @@ void Renderer::render(const Simulator& simulator) {
         minMass = std::min(minMass, body.getMass());
     }
 
-    //std::cout << "Camera position: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << std::endl;
-    //std::cout << "Camera front: " << cameraFront.x << ", " << cameraFront.y << ", " << cameraFront.z << std::endl;
-
     for (size_t i = 0; i < bodies.size(); ++i) {
         const auto& body = bodies[i];
         glm::dvec3 pos = body.getPosition();
-        //std::cout << "Body " << i << " position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
     }
 
     // Calculate the log range
@@ -117,19 +110,6 @@ void Renderer::render(const Simulator& simulator) {
         glm::dvec3 pos = body.getPosition();
         glm::vec3 renderPos(static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z));
 
-//        std::cout << "Rendering body " << i << " (";
-//        switch(i) {
-//            case 0: std::cout << "Sun"; break;
-//            case 1: std::cout << "Mercury"; break;
-//            case 2: std::cout << "Venus"; break;
-//            case 3: std::cout << "Earth"; break;
-//            case 4: std::cout << "Mars"; break;
-//            default: std::cout << "Unknown"; break;
-//        }
-//        std::cout << ") at position ("
-//                  << pos.x << ", " << pos.y << ", " << pos.z
-//                  << ") with scale " << scaleFactor << std::endl;
-
         // Set color based on body index
         switch(i) {
             case 0: glColor3f(1.0f, 1.0f, 0.0f); break;  // Sun: Yellow
@@ -137,6 +117,12 @@ void Renderer::render(const Simulator& simulator) {
             case 2: glColor3f(0.9f, 0.7f, 0.4f); break;  // Venus: Light Orange
             case 3: glColor3f(0.0f, 0.5f, 1.0f); break;  // Earth: Blue
             case 4: glColor3f(1.0f, 0.0f, 0.0f); break;  // Mars: Red
+            case 5: glColor3f(0.8f, 0.6f, 0.2f); break;  // Jupiter: Light Brown
+            case 6: glColor3f(0.9f, 0.9f, 0.7f); break;  // Saturn: Light Yellow
+            case 7: glColor3f(0.0f, 0.5f, 0.5f); break;  // Uranus: Cyan
+            case 8: glColor3f(0.0f, 0.0f, 1.0f); break;  // Neptune: Dark Blue
+            case 9: glColor3f(0.5f, 0.5f, 0.5f); break;  // Pluto: Gray
+
             default: glColor3f(1.0f, 1.0f, 1.0f); break; // White for any additional bodies
         }
 
@@ -271,8 +257,8 @@ float Renderer::calculateGravityFieldStrength(const glm::vec3& point, const std:
 }
 
 void Renderer::drawGrid(const Simulator& simulator) {
-    const float gridSize = 5e11f;
-    const int gridLines = 20;
+    const float gridSize = 5e13f;
+    const int gridLines = 80;
     const float lineSpacing = gridSize / gridLines;
 
     glBegin(GL_LINES);
@@ -311,7 +297,7 @@ void Renderer::drawTrajectories(const std::vector<CelestialBody>& bodies) {
 }
 
 void Renderer::processInput() {
-    float cameraSpeed = this->cameraSpeed;
+    float cameraSpeed = this->cameraSpeed * 1e1f;
 
     glm::vec3 front(cameraFront.x, 0, cameraFront.z);
     front = glm::normalize(front);

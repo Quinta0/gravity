@@ -21,5 +21,7 @@ public:
 private:
     std::vector<CelestialBody> bodies;
     const float G = 6.67430e-11f; // Gravitational constant
+    void checkCollisions();
+    void handleCollision(CelestialBody& body1, CelestialBody& body2);
 };
 #endif //GRAVITY_SIMULATOR_H

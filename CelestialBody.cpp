@@ -12,24 +12,28 @@ std::string vec3_to_string(const glm::vec3& v) {
     return ss.str();
 }
 
-CelestialBody::CelestialBody(double mass, const glm::dvec3& position, const glm::dvec3& velocity)
+CelestialBody::CelestialBody(double mass, const glm::dvec3& position, const glm::dvec3& velocity, double radius)
         : mass(mass), position(position), velocity(velocity), acceleration(0.0f) {}
 
 void CelestialBody::update(double dt) {
-    if (glm::any(glm::isnan(velocity)) || glm::any(glm::isinf(velocity))) {
-        std::cout << "Warning: Invalid velocity detected: " << vec3_to_string(velocity) << std::endl;
-        velocity = glm::vec3(0.0f);
-    }
+    // Runge-Kutta 4th order method
+    glm::dvec3 k1v = acceleration * dt;
+    glm::dvec3 k1r = velocity * dt;
 
-    velocity += acceleration * dt;
-    position += velocity * dt;
+    glm::dvec3 k2v = acceleration * dt;
+    glm::dvec3 k2r = (velocity + k1v * 0.5) * dt;
 
-    if (glm::any(glm::isnan(position)) || glm::any(glm::isinf(position))) {
-        std::cout << "Warning: Invalid position detected: " << vec3_to_string(position) << std::endl;
-        position = glm::vec3(0.0f);
-    }
+    glm::dvec3 k3v = acceleration * dt;
+    glm::dvec3 k3r = (velocity + k2v * 0.5) * dt;
 
-    acceleration = glm::vec3(0.0f);
+    glm::dvec3 k4v = acceleration * dt;
+    glm::dvec3 k4r = (velocity + k3v) * dt;
+
+    velocity += (k1v + 2.0 * k2v + 2.0 * k3v + k4v) / 6.0;
+    position += (k1r + 2.0 * k2r + 2.0 * k3r + k4r) / 6.0;
+
+    acceleration = glm::dvec3(0.0);
+
 }
 
 void CelestialBody::applyForce(const glm::dvec3& force) {

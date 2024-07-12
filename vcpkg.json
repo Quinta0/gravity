@@ -2,9 +2,9 @@
   "dependencies": [
     "freeglut",
     "glew",
+    "glfw3",
     "glm",
-    "vcpkg-cmake",
     "opengl",
-    "glfw3"
+    "vcpkg-cmake"
   ]
 }

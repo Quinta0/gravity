@@ -68,9 +68,9 @@ The program uses OpenGL to render the 3D scene:
 
 # How to Use & Installation
 
-### Prerequisites
+## Prerequisites
 - C++ compiler with C++17 support
-- CMake (version 3.10 or higher)
+- CMake (version 3.28 or higher)
 - OpenGL libraries
 - GLFW3
 - GLM (OpenGL Mathematics)
@@ -78,34 +78,37 @@ The program uses OpenGL to render the 3D scene:
 
 ### Building from Source
 1. Clone the repository:
-```bash
-git clone https://github.com/Quinta0/gravity.git
-cd gravity
-```
-2. Install vcpkg and dependencies:
-```bash
-git clone https://github.com/Microsoft/vcpkg.git 
-./vcpkg/bootstrap-vcpkg.sh  # On Windows, use bootstrap-vcpkg.bat
-./vcpkg/vcpkg install
-```
-3. Create a build directory and navigate to it:
-```bash
-mkdir build 
-cd build
-```
-4. Generate the build files with CMake:
-```bash
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
-```
-5. Build the project:
-```bash
-cmake --build .
-```
-6. Run the simulator:
-```bash
-./gravity
-```
+    ```bash
+    git clone https://github.com/Quinta0/gravity.git
+    cd gravity
+    ```
 
+2. Install vcpkg:
+    ```bash
+    git clone https://github.com/Microsoft/vcpkg.git 
+    cd vcpkg
+    ./bootstrap-vcpkg.sh  # On Windows, use bootstrap-vcpkg.bat
+    ./vcpkg integrate install
+    cd ..
+    ```
+
+3. Install dependencies using vcpkg:
+    ```bash
+    ./vcpkg/vcpkg install freeglut glew glm vcpkg-cmake opengl glfw3
+    ```
+
+4. Create a build directory and run CMake:
+    ```bash
+    mkdir build
+    cd build
+    cmake -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
+    cmake --build .
+    ```
+
+5. Run the simulator:
+    ```bash
+    ./gravity
+    ```
 
 ### Using Docker
 If you prefer to use Docker, follow these steps:
@@ -113,3 +116,11 @@ If you prefer to use Docker, follow these steps:
 1. Ensure Docker is installed on your system.
 
 2. Build the Docker image:
+    ```bash
+    docker build -t gravity-simulator .
+    ```
+
+3. Run the Docker container:
+    ```bash
+    docker run --rm gravity-simulator
+    ```

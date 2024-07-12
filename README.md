@@ -66,3 +66,50 @@ The program uses OpenGL to render the 3D scene:
 3. The scale of the celestial bodies and their distances are not to true scale to make visualization easier.
 4. Relativistic effects are not considered; the simulation uses classical Newtonian mechanics.
 
+# How to Use & Installation
+
+### Prerequisites
+- C++ compiler with C++17 support
+- CMake (version 3.10 or higher)
+- OpenGL libraries
+- GLFW3
+- GLM (OpenGL Mathematics)
+- vcpkg (for managing dependencies)
+
+### Building from Source
+1. Clone the repository:
+```bash
+git clone https://github.com/Quinta0/gravity.git
+cd gravity
+```
+2. Install vcpkg and dependencies:
+```bash
+git clone https://github.com/Microsoft/vcpkg.git 
+./vcpkg/bootstrap-vcpkg.sh  # On Windows, use bootstrap-vcpkg.bat
+./vcpkg/vcpkg install
+```
+3. Create a build directory and navigate to it:
+```bash
+mkdir build 
+cd build
+```
+4. Generate the build files with CMake:
+```bash
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+5. Build the project:
+```bash
+cmake --build .
+```
+6. Run the simulator:
+```bash
+./gravity
+```
+
+
+### Using Docker
+If you prefer to use Docker, follow these steps:
+
+1. Ensure Docker is installed on your system.
+
+2. Build the Docker image:

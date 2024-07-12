@@ -90,13 +90,13 @@ void Renderer::render(const Simulator& simulator) {
         minMass = std::min(minMass, body.getMass());
     }
 
-    std::cout << "Camera position: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << std::endl;
-    std::cout << "Camera front: " << cameraFront.x << ", " << cameraFront.y << ", " << cameraFront.z << std::endl;
+    //std::cout << "Camera position: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << std::endl;
+    //std::cout << "Camera front: " << cameraFront.x << ", " << cameraFront.y << ", " << cameraFront.z << std::endl;
 
     for (size_t i = 0; i < bodies.size(); ++i) {
         const auto& body = bodies[i];
         glm::dvec3 pos = body.getPosition();
-        std::cout << "Body " << i << " position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+        //std::cout << "Body " << i << " position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
     }
 
     // Calculate the log range
@@ -117,18 +117,18 @@ void Renderer::render(const Simulator& simulator) {
         glm::dvec3 pos = body.getPosition();
         glm::vec3 renderPos(static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z));
 
-        std::cout << "Rendering body " << i << " (";
-        switch(i) {
-            case 0: std::cout << "Sun"; break;
-            case 1: std::cout << "Mercury"; break;
-            case 2: std::cout << "Venus"; break;
-            case 3: std::cout << "Earth"; break;
-            case 4: std::cout << "Mars"; break;
-            default: std::cout << "Unknown"; break;
-        }
-        std::cout << ") at position ("
-                  << pos.x << ", " << pos.y << ", " << pos.z
-                  << ") with scale " << scaleFactor << std::endl;
+//        std::cout << "Rendering body " << i << " (";
+//        switch(i) {
+//            case 0: std::cout << "Sun"; break;
+//            case 1: std::cout << "Mercury"; break;
+//            case 2: std::cout << "Venus"; break;
+//            case 3: std::cout << "Earth"; break;
+//            case 4: std::cout << "Mars"; break;
+//            default: std::cout << "Unknown"; break;
+//        }
+//        std::cout << ") at position ("
+//                  << pos.x << ", " << pos.y << ", " << pos.z
+//                  << ") with scale " << scaleFactor << std::endl;
 
         // Set color based on body index
         switch(i) {
@@ -325,6 +325,8 @@ void Renderer::processInput() {
         cameraPos -= right * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += right * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }
 
 void Renderer::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {

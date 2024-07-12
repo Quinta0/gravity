@@ -3,6 +3,12 @@ project(gravity)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Use vcpkg
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "Vcpkg toolchain file")
+endif()
+
 # Find packages
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -31,7 +37,6 @@ target_link_libraries(gravity PRIVATE
         glm::glm
 )
 
-# On some systems, you might need to explicitly link against OpenGL
 if(UNIX AND NOT APPLE)
     target_link_libraries(gravity PRIVATE GL)
 endif()

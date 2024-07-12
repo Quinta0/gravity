@@ -18,6 +18,8 @@ public:
     void render(const Simulator& simulator);
     bool shouldClose();
     void swapBuffers();
+    void processInput();
+    void cursorPosCallback(double xpos, double ypos);
 
 private:
     GLFWwindow* window;
@@ -28,6 +30,21 @@ private:
     GLuint sphereVAO, sphereVBO, sphereEBO;
     int sphereVertexCount, sphereIndexCount;
 
-    void drawGrid();
+    void drawGrid(const Simulator& simulator);
+    float calculateGravityFieldStrength(const glm::vec3& point, const std::vector<CelestialBody>& bodies);
+    void drawGravityField(const Simulator& simulator);
+    void drawTrajectories(const std::vector<CelestialBody>& bodies);
+
+    glm::vec3 cameraPos;
+    glm::vec3 cameraFront;
+    glm::vec3 cameraUp;
+    float cameraSpeed;
+    float mouseSensitivity;
+    float yaw;
+    float pitch;
+    bool firstMouse;
+    double lastX, lastY;
+
+    void updateCameraVectors();
 };
 #endif //GRAVITY_RENDERER_H

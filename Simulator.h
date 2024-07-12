@@ -13,13 +13,13 @@ public:
     Simulator();
 
     void addBody(const CelestialBody& body);
-    void update(float dt);
+    void update(double dt);
     const std::vector<CelestialBody>& getBodies() const { return bodies; }
+    glm::dvec3 calculateGravitationalForce(const CelestialBody& body1, const CelestialBody& body2);
+
 
 private:
     std::vector<CelestialBody> bodies;
     const float G = 6.67430e-11f; // Gravitational constant
-
-    glm::vec3 calculateGravitationalForce(const CelestialBody& body1, const CelestialBody& body2);
 };
 #endif //GRAVITY_SIMULATOR_H

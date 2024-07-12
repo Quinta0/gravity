@@ -9,7 +9,18 @@
 #include <stdexcept>
 #include <iostream>
 
-Renderer::Renderer(int width, int height) {
+Renderer::Renderer(int width, int height)
+        : cameraPos(3e11f, 2e11f, 3e11f),
+          cameraFront(glm::normalize(glm::vec3(0.0f) - glm::vec3(3e11f, 2e11f, 3e11f))),
+          cameraUp(0.0f, 1.0f, 0.0f),
+          cameraSpeed(1e9f), // Reduced speed
+          mouseSensitivity(0.05f), // Reduced sensitivity
+          yaw(-45.0f),
+          pitch(-30.0f),
+          firstMouse(true),
+          lastX(width / 2.0f),
+          lastY(height / 2.0f)
+{
     if (!glfwInit()) {
         throw std::runtime_error("Failed to initialize GLFW");
     }
@@ -32,6 +43,13 @@ Renderer::Renderer(int width, int height) {
     glEnable(GL_COLOR_MATERIAL);
 
     createSphereMesh(1.0f, 20, 20);
+
+    // Set up camera
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
+        static_cast<Renderer*>(glfwGetWindowUserPointer(window))->cursorPosCallback(xpos, ypos);
+    });
 }
 
 Renderer::~Renderer() {
@@ -48,21 +66,58 @@ void Renderer::render(const Simulator& simulator) {
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, 1024.0 / 768.0, 1e8, 1e12);
+    gluPerspective(45.0, 1600.0 / 1200.0, 1e9, 1e13);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(3e11, 2e11, 3e11, 0, 0, 0, 0, 1, 0);
+    glm::vec3 center = glm::vec3(0, 0, 0); // Look at the center of the system
+    gluLookAt(cameraPos.x, cameraPos.y, cameraPos.z,
+              center.x, center.y, center.z,
+              cameraUp.x, cameraUp.y, cameraUp.z);
+    drawGrid(simulator);
 
-    drawGrid();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    drawTrajectories(simulator.getBodies());
+    glDisable(GL_BLEND);
 
     const auto& bodies = simulator.getBodies();
+    double maxMass = 0;
+    double minMass = std::numeric_limits<double>::max();
+
+    // Find the maximum and minimum masses
+    for (const auto& body : bodies) {
+        maxMass = std::max(maxMass, body.getMass());
+        minMass = std::min(minMass, body.getMass());
+    }
+
+    std::cout << "Camera position: " << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << std::endl;
+    std::cout << "Camera front: " << cameraFront.x << ", " << cameraFront.y << ", " << cameraFront.z << std::endl;
+
     for (size_t i = 0; i < bodies.size(); ++i) {
         const auto& body = bodies[i];
-        float minSize = 2e9f;
-        float scaleFactor = std::max(std::cbrt(body.getMass()) * 1e-9f, minSize);
+        glm::dvec3 pos = body.getPosition();
+        std::cout << "Body " << i << " position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+    }
 
-        glm::vec3 pos = body.getPosition();
+    // Calculate the log range
+    double logMinMass = std::log10(minMass);
+    double logMaxMass = std::log10(maxMass);
+    double logRange = logMaxMass - logMinMass;
+
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        const auto& body = bodies[i];
+
+        // Calculate the scale factor based on mass
+        double logMass = std::log10(body.getMass());
+        double normalizedLogMass = (logMass - logMinMass) / logRange;
+        float minScale = 5e9f;  // Minimum scale to ensure visibility
+        float maxScale = 5e10f; // Maximum scale to prevent overly large objects
+        float scaleFactor = minScale + static_cast<float>(normalizedLogMass) * (maxScale - minScale);
+
+        glm::dvec3 pos = body.getPosition();
+        glm::vec3 renderPos(static_cast<float>(pos.x), static_cast<float>(pos.y), static_cast<float>(pos.z));
+
         std::cout << "Rendering body " << i << " (";
         switch(i) {
             case 0: std::cout << "Sun"; break;
@@ -86,7 +141,7 @@ void Renderer::render(const Simulator& simulator) {
             default: glColor3f(1.0f, 1.0f, 1.0f); break; // White for any additional bodies
         }
 
-        drawSphere(body.getPosition(), scaleFactor);
+        drawSphere(renderPos, scaleFactor);
     }
 }
 
@@ -191,6 +246,7 @@ void Renderer::drawDebugTriangle() {
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    gluLookAt(4e11, 3e11, 4e11, 0, 0, 0, 0, 1, 0);
 
     glBegin(GL_TRIANGLES);
     glColor3f(1.0f, 0.0f, 0.0f);
@@ -202,14 +258,100 @@ void Renderer::drawDebugTriangle() {
     glEnd();
 }
 
-void Renderer::drawGrid() {
+float Renderer::calculateGravityFieldStrength(const glm::vec3& point, const std::vector<CelestialBody>& bodies) {
+    float fieldStrength = 0.0f;
+    const float G = 6.67430e-11f; // Gravitational constant
+    const float scalingFactor = 1e20f; // Greatly increased scaling factor
+    for (const auto& body : bodies) {
+        glm::dvec3 bodyPos = body.getPosition();
+        float distance = glm::length(glm::vec3(bodyPos) - point);
+        if (distance < 1e9f) distance = 1e9f; // Prevent division by zero
+        fieldStrength += scalingFactor * G * static_cast<float>(body.getMass()) / (distance * distance);
+    }
+    return fieldStrength;
+}
+
+void Renderer::drawGrid(const Simulator& simulator) {
+    const float gridSize = 5e11f;
+    const int gridLines = 20;
+    const float lineSpacing = gridSize / gridLines;
+
     glBegin(GL_LINES);
-    glColor3f(0.2f, 0.2f, 0.2f);  // Gray color for the grid
-    for (float i = -5e11f; i <= 5e11f; i += 5e10f) {
-        glVertex3f(i, 0, -5e11f);
-        glVertex3f(i, 0, 5e11f);
-        glVertex3f(-5e11f, 0, i);
-        glVertex3f(5e11f, 0, i);
+    glColor3f(0.2f, 0.2f, 0.2f);  // Lighter gray for better visibility
+
+    for (int i = -gridLines/2; i <= gridLines/2; ++i) {
+        float pos = i * lineSpacing;
+        glVertex3f(-gridSize/2, 0, pos);
+        glVertex3f(gridSize/2, 0, pos);
+        glVertex3f(pos, 0, -gridSize/2);
+        glVertex3f(pos, 0, gridSize/2);
+    }
+
+    glEnd();
+}
+
+void Renderer::drawTrajectories(const std::vector<CelestialBody>& bodies) {
+    glBegin(GL_LINES);
+    for (const auto& body : bodies) {
+        const auto& trajectory = body.getTrajectory();
+        if (trajectory.size() < 2) continue;
+
+        for (size_t i = 1; i < trajectory.size(); ++i) {
+            glm::vec3 p1(trajectory[i-1]);
+            glm::vec3 p2(trajectory[i]);
+
+            // Fade out older parts of the trajectory
+            float alpha = static_cast<float>(i) / trajectory.size();
+            glColor4f(1.0f, 1.0f, 1.0f, alpha * 0.5f);
+
+            glVertex3f(p1.x, p1.y, p1.z);
+            glVertex3f(p2.x, p2.y, p2.z);
+        }
     }
     glEnd();
+}
+
+void Renderer::processInput() {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+void Renderer::cursorPosCallback(double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+
+    xoffset *= mouseSensitivity;
+    yoffset *= mouseSensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    updateCameraVectors();
+}
+
+void Renderer::updateCameraVectors() {
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
 }

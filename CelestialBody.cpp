@@ -12,10 +12,10 @@ std::string vec3_to_string(const glm::vec3& v) {
     return ss.str();
 }
 
-CelestialBody::CelestialBody(float mass, const glm::vec3& position, const glm::vec3& velocity)
+CelestialBody::CelestialBody(double mass, const glm::dvec3& position, const glm::dvec3& velocity)
         : mass(mass), position(position), velocity(velocity), acceleration(0.0f) {}
 
-void CelestialBody::update(float dt) {
+void CelestialBody::update(double dt) {
     if (glm::any(glm::isnan(velocity)) || glm::any(glm::isinf(velocity))) {
         std::cout << "Warning: Invalid velocity detected: " << vec3_to_string(velocity) << std::endl;
         velocity = glm::vec3(0.0f);
@@ -32,6 +32,13 @@ void CelestialBody::update(float dt) {
     acceleration = glm::vec3(0.0f);
 }
 
-void CelestialBody::applyForce(const glm::vec3& force) {
+void CelestialBody::applyForce(const glm::dvec3& force) {
     acceleration += force / mass;
+}
+
+void CelestialBody::addToTrajectory(const glm::dvec3& position) {
+    trajectory.push_back(position);
+    if (trajectory.size() > MAX_TRAJECTORY_POINTS) {
+        trajectory.erase(trajectory.begin());
+    }
 }
